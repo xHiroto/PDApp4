@@ -28,7 +28,8 @@
             android:layout_weight="5"
             android:ems="10"
             android:hint="Event Title"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:maxLength="15" />
     </LinearLayout>
 
     <LinearLayout
@@ -51,7 +52,8 @@
             android:layout_weight="20"
             android:ems="10"
             android:hint="Description"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:maxLength="20" />
     </LinearLayout>
 
     <LinearLayout

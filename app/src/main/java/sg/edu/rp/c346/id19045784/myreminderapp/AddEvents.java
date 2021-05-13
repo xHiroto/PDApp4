@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -141,21 +142,39 @@ public class AddEvents extends AppCompatActivity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int id = -1;
                 //condition check for empty fields
+                //if not empty
                 if(!etTitle.getText().toString().isEmpty() & !etDesc.getText().toString().isEmpty()) {
                     //Code to dismiss the keyboard
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(etTitle.getWindowToken(), 0);
                     imm.hideSoftInputFromWindow(etDesc.getWindowToken(), 0);
-                    Toast.makeText(AddEvents.this, "Reminder Added", Toast.LENGTH_SHORT).show();
+
+
+                    //prepare to pass data back to the MainActivty
+                    String eventTitle = etTitle.getText().toString();
+                    String desc = etDesc.getText().toString();
+                    String date = etDate.getText().toString();
+                    String timeStart = etStart.getText().toString();
+                    String timeEnd = etEnd.getText().toString();
+                    Intent i = new Intent();
+                    i.putExtra("id", id +1);
+                    i.putExtra("event", eventTitle);
+                    i.putExtra("desc", desc);
+                    i.putExtra("date", date);
+                    i.putExtra("timeStart", timeStart);
+                    i.putExtra("timeEnd", timeEnd);
+                    setResult(RESULT_OK, i);
                     finish();
                 }
+                //if empty
                 else {
                     //Code to dismiss the keyboard
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(etTitle.getWindowToken(), 0);
                     imm.hideSoftInputFromWindow(etDesc.getWindowToken(), 0);
-                    Toast.makeText(AddEvents.this, "Both TextFields cannot be Empty!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddEvents.this, "Both Fields cannot be Empty!", Toast.LENGTH_SHORT).show();
                 }
             }
         });

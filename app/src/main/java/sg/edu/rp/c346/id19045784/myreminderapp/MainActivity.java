@@ -16,11 +16,15 @@ import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     ListView lv;
     TextView tv;
-    Button btn;
+    ArrayList<Reminder> alReminder;
+    ReminderAdapter aa;
 
     int code = 1;
 
@@ -30,13 +34,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        //set the findview by id
         lv = findViewById(R.id.lv);
         tv = findViewById(R.id.textView);
-
-
-        //sets the Main activty view to the text view when list view is empty
-        lv.setEmptyView(tv);
+        DBHelper dbReminder = new DBHelper(MainActivity.this);
+        alReminder = new ArrayList<>();
+        //check if Arraylist is empty if not add database value into arraylist
+         if (!alReminder.isEmpty()) {
+            alReminder = dbReminder.getAllReminders();
+            aa = new ReminderAdapter(this, R.layout.row, alReminder);
+            lv.setAdapter(aa);
+         }
+         else {
+             //sets the Main activty view to the text view when list view is empty
+             lv.setEmptyView(tv);
+             aa = new ReminderAdapter(this, R.layout.row, alReminder);
+             lv.setAdapter(aa);
+         }
 
     }
     //inflate the main activity with the soft option menu
@@ -64,6 +78,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        
+            if (resultCode == RESULT_OK) {
+                if (data != null) {
+                    Integer id = data.getIntExtra("id", 0);
+                    String event = data.getStringExtra("event");
+                    String desc = data.getStringExtra("desc");
+                    String date = data.getStringExtra("date");
+                    String timeStart = data.getStringExtra("timeStart");
+                    String timeEnd = data.getStringExtra("timeEnd");
 
+                    alReminder.add(new Reminder(id, event, desc, date, timeStart, timeEnd));
+                    aa.notifyDataSetChanged();
+                }
+
+        }
     }
 }
