@@ -1,6 +1,8 @@
 package sg.edu.rp.c346.id19045784.myreminderapp;
 
-public class Reminder {
+import java.io.Serializable;
+
+public class Reminder implements Serializable {
     private int ID;
     private String title;
     private String description;

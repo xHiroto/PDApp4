@@ -53,7 +53,7 @@ public class ReminderAdapter extends ArrayAdapter {
         tvEvent.setText(currentEvent.getTitle());
         tvDesc.setText(currentEvent.getDescription());
         tvDate.setText(currentEvent.getDate());
-        tvTime.setText(currentEvent.getStartTime() + " -" + currentEvent.getEndTime());
+        tvTime.setText(currentEvent.getStartTime() + "--" + currentEvent.getEndTime());
 
 
 

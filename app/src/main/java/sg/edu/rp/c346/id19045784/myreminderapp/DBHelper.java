@@ -16,7 +16,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private Context context;
     private static final String DATABASE_NAME = "reminders.db";
     private static final int DATABASE_VERSION = 1;
-    private static final String TABLE_NOTE = "reminder";
+    private static final String TABLE_REMINDER = "reminder";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_EVENT= "event";
     private static final String COLUMN_DESCRIPTION = "desc";
@@ -33,31 +33,30 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         //TODO CREATE TABLE Note
-        String createTableSql = "CREATE TABLE " + TABLE_NOTE +  "("
+        String createTableSql = "CREATE TABLE " + TABLE_REMINDER +  "("
                 + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_EVENT + " TEXT,"
-                + COLUMN_DESCRIPTION + "TEXT,"
-                + COLUMN_DATE + "TEXT,"
-                + COLUMN_TIMESTART + "TEXT,"
-                + COLUMN_TIMEEND + "TEXT)";
+                + COLUMN_DESCRIPTION + " TEXT,"
+                + COLUMN_DATE + " TEXT,"
+                + COLUMN_TIMESTART + " TEXT,"
+                + COLUMN_TIMEEND + " TEXT)";
         db.execSQL(createTableSql);
         Log.i("info" ,"created tables");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_REMINDER);
         onCreate(db);
     }
 
-    public void insertNote(int id,String event, String desc, String date, String timestart, String timeend) {
+    public long insertNote(String event, String desc, String date, String timestart, String timeend) {
         //TODO insert the data into the database
         // Get an instance of the database for writing
         SQLiteDatabase db = this.getWritableDatabase();
         // We use ContentValues object to store the values for
         //  the db operation
         ContentValues values = new ContentValues();
-        values.put(COLUMN_ID, id);
         // Store the column name as key and the event as value
         values.put(COLUMN_EVENT, event);
         // Store the column name as key and the desc as value
@@ -70,29 +69,28 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TIMEEND, timeend);
 
         // Insert the row into the TABLE_TASK
-        long result = db.insert(TABLE_NOTE, null, values);
+        long result = db.insert(TABLE_REMINDER, null, values);
+
+
         if (result != -1){
             Toast.makeText(context,"Inserted",Toast.LENGTH_LONG).show();
         }
         else {
-            Toast.makeText(context,"Fail Inserted",Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Fail Inserted", Toast.LENGTH_LONG).show();
         }
         // Close the database connection
         db.close();
+        return result;
     }
 
     public ArrayList<Reminder> getAllReminders() {
         //TODO return records in Java objects
         ArrayList<Reminder> tasks = new ArrayList<Reminder>();
-        String selectQuery = "SELECT " + COLUMN_ID + ", "
-                + COLUMN_EVENT + ", "
-                + COLUMN_DESCRIPTION + ","
-                + COLUMN_DATE + ","
-                + COLUMN_TIMESTART + ","
-                + COLUMN_TIMEEND
-                + " FROM " + TABLE_NOTE;
+
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        String[] columns= {COLUMN_ID, COLUMN_EVENT, COLUMN_DESCRIPTION, COLUMN_DATE, COLUMN_TIMESTART, COLUMN_TIMEEND};
+        Cursor cursor = db.query(TABLE_REMINDER, columns, null,
+                null, null, null, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -111,38 +109,28 @@ public class DBHelper extends SQLiteOpenHelper {
         return tasks;
     }
 
-    public ArrayList<String> getNoteContent() {
-        //TODO return records in Strings
-
-        // Create an ArrayList that holds String objects
-        ArrayList<String> notes = new ArrayList<String>();
-        // Select all the notes' content
-        String selectQuery ="SELECT " + COLUMN_ID + ", "
-                + COLUMN_EVENT + ","
-                + COLUMN_DESCRIPTION + ","
-                + COLUMN_DATE + ","
-                + COLUMN_TIMESTART + ","
-                + COLUMN_TIMEEND
-                + " FROM " + TABLE_NOTE;
-
-        // Get the instance of database to read
-        SQLiteDatabase db = this.getReadableDatabase();
-        // Run the SQL query and get back the Cursor object
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        // moveToFirst() moves to first row
-        if (cursor.moveToFirst()) {
-            // Loop while moveToNext() points to next row and returns true;
-            // moveToNext() returns false when no more next row to move to
-            do {
-                notes.add(cursor.getString(0));
-
-
-            } while (cursor.moveToNext());
-        }
-        // Close connection
-        cursor.close();
+    public int updateReminder(Reminder data){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_EVENT, data.getTitle());
+        values.put(COLUMN_DESCRIPTION, data.getDescription());
+        values.put(COLUMN_DATE, data.getDate());
+        values.put(COLUMN_TIMESTART, data.getStartTime());
+        values.put(COLUMN_TIMESTART, data.getEndTime());
+        values.put(COLUMN_ID,data.getID());
+        String condition = COLUMN_ID + "= ?";
+        String[] args = {String.valueOf(data.getID())};
+        int result = db.update(TABLE_REMINDER, values, condition, args);
         db.close();
-
-        return notes;
+        return result;
     }
+    public int deleteReminder(int id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String condition = COLUMN_ID + "= ?";
+        String[] args = {String.valueOf(id)};
+        int result = db.delete(TABLE_REMINDER, condition, args);
+        db.close();
+        return result;
+    }
+
 }

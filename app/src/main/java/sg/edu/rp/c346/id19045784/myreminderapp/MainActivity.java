@@ -3,8 +3,10 @@ package sg.edu.rp.c346.id19045784.myreminderapp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Reminder> alReminder;
     ReminderAdapter aa;
 
-    int code = 1;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -39,9 +41,9 @@ public class MainActivity extends AppCompatActivity {
         tv = findViewById(R.id.textView);
         DBHelper dbReminder = new DBHelper(MainActivity.this);
         alReminder = new ArrayList<>();
+        alReminder = dbReminder.getAllReminders();
         //check if Arraylist is empty if not add database value into arraylist
          if (!alReminder.isEmpty()) {
-            alReminder = dbReminder.getAllReminders();
             aa = new ReminderAdapter(this, R.layout.row, alReminder);
             lv.setAdapter(aa);
          }
@@ -51,6 +53,37 @@ public class MainActivity extends AppCompatActivity {
              aa = new ReminderAdapter(this, R.layout.row, alReminder);
              lv.setAdapter(aa);
          }
+
+         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+             @Override
+             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                 new AlertDialog.Builder(MainActivity.this)
+                         .setTitle("Delete entry")
+                         .setMessage("Are you sure you want to delete this entry?")
+
+                         // Specifying a listener allows you to take an action before dismissing the dialog.
+                         // The dialog is automatically dismissed when a dialog button is clicked.
+                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                             public void onClick(DialogInterface dialog, int which) {
+                                 // Continue with delete operation
+                                 DBHelper dbh = new DBHelper(MainActivity.this);
+                                 dbh.deleteReminder(alReminder.get(position).getID());
+                                 alReminder.clear();
+                                 alReminder = dbh.getAllReminders();
+                                 aa = new ReminderAdapter(MainActivity.this, R.layout.row, alReminder);
+                                 lv.setAdapter(aa);
+                                 dbh.close();
+
+                             }
+                         })
+
+                         // A null listener allows the button to dismiss the dialog and take no further action.
+                         .setNegativeButton(android.R.string.no, null)
+                         .setIcon(android.R.drawable.ic_dialog_alert)
+                         .show();
+
+             }
+         });
 
     }
     //inflate the main activity with the soft option menu
@@ -66,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         //check if user presses the 1st soft menu option
         if (item.getItemId() == R.id.AddSelection){
             Intent intent = new Intent(this,AddEvents.class);
-            startActivityForResult(intent, code);
+            startActivityForResult(intent, 9);
         }
         else{
 
@@ -75,23 +108,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-            if (resultCode == RESULT_OK) {
-                if (data != null) {
-                    Integer id = data.getIntExtra("id", 0);
-                    String event = data.getStringExtra("event");
-                    String desc = data.getStringExtra("desc");
-                    String date = data.getStringExtra("date");
-                    String timeStart = data.getStringExtra("timeStart");
-                    String timeEnd = data.getStringExtra("timeEnd");
 
-                    alReminder.add(new Reminder(id, event, desc, date, timeStart, timeEnd));
-                    aa.notifyDataSetChanged();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+            if (resultCode == RESULT_OK & requestCode == 9) {
+                DBHelper dbh = new DBHelper(MainActivity.this);
+                alReminder = dbh.getAllReminders();
+                aa = new ReminderAdapter(this, R.layout.row, alReminder);
+                lv.setAdapter(aa);
                 }
 
-        }
+            if  (resultCode == RESULT_OK & requestCode == 10){
+                if (alReminder.isEmpty()){
+                    lv.setEmptyView(tv);
+                }
+                else {
+                    DBHelper dbh = new DBHelper(MainActivity.this);
+                    alReminder.clear();
+                    alReminder = dbh.getAllReminders();
+                    aa = new ReminderAdapter(MainActivity.this, R.layout.row, alReminder);
+                    lv.setAdapter(aa);
+                }
+            }
+
     }
-}
+    }
