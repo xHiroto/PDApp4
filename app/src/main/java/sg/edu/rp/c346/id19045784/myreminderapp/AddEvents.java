@@ -23,7 +23,11 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 
 public class AddEvents extends AppCompatActivity {
@@ -49,9 +53,24 @@ public class AddEvents extends AppCompatActivity {
 
         //set the default value shown when activtiy starts
         etDate.setText(c.get(Calendar.DAY_OF_MONTH) + "/" + (c.get(Calendar.MONTH) + 1) + "/" + c.get(Calendar.YEAR));
-        etStart.setText(String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)));
-        c.add(Calendar.HOUR_OF_DAY, 1);
-        etEnd.setText(String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)));
+        String aMpM = "AM";
+        if(c.get(Calendar.HOUR_OF_DAY) >11)
+        {
+            aMpM = "PM";
+        }
+
+        //Make the 24 hour time format to 12 hour time format
+        int currentHour;
+        if(c.get(Calendar.HOUR_OF_DAY)>11)
+        {
+            currentHour = c.get(Calendar.HOUR_OF_DAY) - 12;
+        }
+        else
+        {
+            currentHour = c.get(Calendar.HOUR_OF_DAY);
+        }
+        etStart.setText(String.format("%02d:%02d%s",currentHour,c.get(Calendar.MINUTE),aMpM));
+        etEnd.setText(String.format("%02d:%02d%s", (currentHour+1),c.get(Calendar.MINUTE),aMpM));
 
 
         //when user presses the
@@ -77,6 +96,7 @@ public class AddEvents extends AppCompatActivity {
                             public void onDateSet(DatePicker view, int year,
                                                   int monthOfYear, int dayOfMonth) {
                                 // set day of month , month and year value in the edit text
+
                                 etDate.setText(dayOfMonth + "/"
                                         + (monthOfYear + 1) + "/" + year);
 
@@ -107,12 +127,34 @@ public class AddEvents extends AppCompatActivity {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int hourOfDay, int minutes) {
 
-                        etStart.setText(String.format("%02d:%02d", hourOfDay, minutes));
-                        etEnd.setText((String.format("%02d:%02d", hourOfDay + 1, minutes)));
+                        String aMpM = "AM";
+                        if(hourOfDay >11)
+                        {
+                            aMpM = "PM";
+                        }
+
+                        //Make the 24 hour time format to 12 hour time format
+                        int currentHour;
+                        if(hourOfDay>12)
+                        {
+                            currentHour = hourOfDay - 12;
+                        }
+                        else
+                        {
+                            currentHour = hourOfDay;
+                        }
+
+                        etStart.setText(String.format("%02d:%02d%s",currentHour,minutes,aMpM));
+                        if (currentHour == 12){
+                            etEnd.setText(String.format("%02d:%02d%s", ((currentHour-12)+1),minutes,aMpM));
+                        }
+                        else {
+                            etEnd.setText(String.format("%02d:%02d%s", (currentHour+1),minutes,aMpM));
+                        }
 
 
                     }
-                }, currentHour, currentMinute, true);
+                }, currentHour, currentMinute, false);
 
                 timePickerDialog.show();
             }
@@ -137,11 +179,28 @@ public class AddEvents extends AppCompatActivity {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int hourOfDay, int minutes) {
 
+                        String aMpM = "AM";
+                        if(hourOfDay >11)
+                        {
+                            aMpM = "PM";
+                        }
 
-                        etEnd.setText((String.format("%02d:%02d", hourOfDay, minutes)));
+                        //Make the 24 hour time format to 12 hour time format
+                        int currentHour;
+                        if(hourOfDay>12)
+                        {
+                            currentHour = hourOfDay - 12;
+                        }
+                        else
+                        {
+                            currentHour = hourOfDay;
+                        }
+
+
+                        etEnd.setText(String.format("%02d:%02d%s", currentHour,minutes,aMpM));
 
                     }
-                }, currentHour, currentMinute, true);
+                }, currentHour, currentMinute, false);
 
                 timePickerDialog.show();
             }
@@ -165,39 +224,85 @@ public class AddEvents extends AppCompatActivity {
                     String eventTitle = etTitle.getText().toString().trim();
                     String desc = etDesc.getText().toString().trim();
                     String date = etDate.getText().toString();
-                    String timeStart = etStart.getText().toString();
-                    String timeEnd = etEnd.getText().toString();
+                    String timeStart = etStart.getText().toString().trim();
+                    String timeEnd = etEnd.getText().toString().trim();
+
+
 
                     DBHelper dbh = new DBHelper(AddEvents.this);
                     long inserted_reminder = dbh.insertNote(eventTitle, desc, date, timeStart, timeEnd);
                     dbh.close();
                     Intent i = new Intent();
                     setResult(RESULT_OK, i);
-                    finish();
-                    /*ContentResolver cr = AddEvents.this.getContentResolver();
-                    ContentValues values = new ContentValues();
 
 
-                    // Default calendar
-                    values.put(CalendarContract.Events.CALENDAR_ID, 1);
-                    values.put(CalendarContract.Events.TITLE, eventTitle);
-                    values.put(CalendarContract.Events.DESCRIPTION, desc);
-                    values.put(CalendarContract.Events.RDATE, date);
-                    values.put(CalendarContract.Events.DTSTART, timeStart);
-                    // Set Period for 1 Hour
-                    values.put(CalendarContract.Events.DURATION, "+P1H");
-                    values.put(CalendarContract.Events.HAS_ALARM, 1);
-                    int permissionCheck = PermissionChecker.checkSelfPermission(AddEvents.this, Manifest.permission.WRITE_CALENDAR);
-
-                    if (permissionCheck != PermissionChecker.PERMISSION_GRANTED){
-                        ActivityCompat.requestPermissions(AddEvents.this, new String[]{Manifest.permission.WRITE_CALENDAR}, 0);
-                        // stops the action from proceeding further as permission
-                        // granted yet
-                        return;
+                    String[] testdateSplit = date.split("/");
+                    String nameOfMonth = "";
+                    if (testdateSplit[1].equals("1")){
+                        nameOfMonth = "January";
+                    }
+                    else if (testdateSplit[1].equals("2")){
+                        nameOfMonth = "February";
+                    }
+                    else if (testdateSplit[1].equals("3")){
+                        nameOfMonth = "March";
+                    }
+                    else if (testdateSplit[1].equals("4")){
+                        nameOfMonth = "April";
+                    }
+                    else if (testdateSplit[1].equals("5")){
+                        nameOfMonth = "May";
+                    }
+                    else if (testdateSplit[1].equals("6")){
+                        nameOfMonth = "June";
+                    }
+                    else if (testdateSplit[1].equals("7")){
+                        nameOfMonth = "July";
+                    }
+                    else if (testdateSplit[1].equals("8")){
+                        nameOfMonth = "August";
+                    }
+                    else if (testdateSplit[1].equals("9")){
+                        nameOfMonth = "September";
+                    }
+                    else if (testdateSplit[1].equals("10")){
+                        nameOfMonth = "October";
+                    }
+                    else if (testdateSplit[1].equals("11")){
+                        nameOfMonth = "November";
+                    }
+                    else {
+                        nameOfMonth = "December";
                     }
 
-                    // Insert event to calendar
-                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);*/
+
+                    DateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy, h:mma");
+                    String dateStarts = nameOfMonth + " " + testdateSplit[0] + ", " + testdateSplit[2] + ", " + timeStart;
+                    String dateEnds = "June 31, 2021, 02:10PM";
+                    ContentResolver cr = AddEvents.this.getContentResolver();
+                    // event insert
+                    ContentValues values = new ContentValues();
+                    Date startDate = new Date(), endDate = new Date();
+                    try {
+                        startDate = formatter.parse(dateStarts);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        endDate = formatter.parse(dateEnds);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    Intent intent = new Intent(Intent.ACTION_INSERT);
+                    intent.setData(CalendarContract.Events.CONTENT_URI);
+                    intent.putExtra(CalendarContract.Events.TITLE, eventTitle);
+                    intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startDate.getTime());
+                    intent.putExtra(CalendarContract.Events.DESCRIPTION, desc);
+                   // intent.putExtra(CalendarContract.Events.ALL_DAY, true);
+                    startActivity(intent);
+                    finish();
+
 
                 }
                 //if empty
