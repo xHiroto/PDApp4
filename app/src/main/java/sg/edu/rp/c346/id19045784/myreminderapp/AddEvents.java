@@ -236,39 +236,40 @@ public class AddEvents extends AppCompatActivity {
                     setResult(RESULT_OK, i);
 
 
-                    String[] testdateSplit = date.split("/");
+                    String[] dateSplit = date.split("/");
+
                     String nameOfMonth = "";
-                    if (testdateSplit[1].equals("1")){
+                    if (dateSplit[1].equals("1")){
                         nameOfMonth = "January";
                     }
-                    else if (testdateSplit[1].equals("2")){
+                    else if (dateSplit[1].equals("2")){
                         nameOfMonth = "February";
                     }
-                    else if (testdateSplit[1].equals("3")){
+                    else if (dateSplit[1].equals("3")){
                         nameOfMonth = "March";
                     }
-                    else if (testdateSplit[1].equals("4")){
+                    else if (dateSplit[1].equals("4")){
                         nameOfMonth = "April";
                     }
-                    else if (testdateSplit[1].equals("5")){
+                    else if (dateSplit[1].equals("5")){
                         nameOfMonth = "May";
                     }
-                    else if (testdateSplit[1].equals("6")){
+                    else if (dateSplit[1].equals("6")){
                         nameOfMonth = "June";
                     }
-                    else if (testdateSplit[1].equals("7")){
+                    else if (dateSplit[1].equals("7")){
                         nameOfMonth = "July";
                     }
-                    else if (testdateSplit[1].equals("8")){
+                    else if (dateSplit[1].equals("8")){
                         nameOfMonth = "August";
                     }
-                    else if (testdateSplit[1].equals("9")){
+                    else if (dateSplit[1].equals("9")){
                         nameOfMonth = "September";
                     }
-                    else if (testdateSplit[1].equals("10")){
+                    else if (dateSplit[1].equals("10")){
                         nameOfMonth = "October";
                     }
-                    else if (testdateSplit[1].equals("11")){
+                    else if (dateSplit[1].equals("11")){
                         nameOfMonth = "November";
                     }
                     else {
@@ -277,8 +278,8 @@ public class AddEvents extends AppCompatActivity {
 
 
                     DateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy, h:mma");
-                    String dateStarts = nameOfMonth + " " + testdateSplit[0] + ", " + testdateSplit[2] + ", " + timeStart;
-                    String dateEnds = "June 31, 2021, 02:10PM";
+                    String dateStarts = nameOfMonth + " " + dateSplit[0] + ", " + dateSplit[2] + ", " + timeStart;
+                    String dateEnds = nameOfMonth + " " + dateSplit[0] + ", " + dateSplit[2] + ", " + timeEnd;
                     ContentResolver cr = AddEvents.this.getContentResolver();
                     // event insert
                     ContentValues values = new ContentValues();
@@ -298,6 +299,7 @@ public class AddEvents extends AppCompatActivity {
                     intent.setData(CalendarContract.Events.CONTENT_URI);
                     intent.putExtra(CalendarContract.Events.TITLE, eventTitle);
                     intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startDate.getTime());
+                    intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endDate.getTime());
                     intent.putExtra(CalendarContract.Events.DESCRIPTION, desc);
                    // intent.putExtra(CalendarContract.Events.ALL_DAY, true);
                     startActivity(intent);
